@@ -46,6 +46,8 @@ import {
 interface DesktopProps {
   onOpenRecruiter: () => void;
   onOpenResumeModal: () => void;
+  currentTheme?: OSTheme;
+  onChangeTheme?: (t: OSTheme) => void;
 }
 
 interface ContextMenuState {
@@ -54,9 +56,22 @@ interface ContextMenuState {
   y: number;
 }
 
-export default function Desktop({ onOpenRecruiter, onOpenResumeModal }: DesktopProps) {
+export default function Desktop({
+  onOpenRecruiter,
+  onOpenResumeModal,
+  currentTheme: externalTheme,
+  onChangeTheme: externalOnChangeTheme,
+}: DesktopProps) {
   // Theme & Audio state
-  const [currentTheme, setCurrentTheme] = useState<OSTheme>("daylight");
+  const [internalTheme, setInternalTheme] = useState<OSTheme>("daylight");
+  const currentTheme = externalTheme ?? internalTheme;
+  const setCurrentTheme = (theme: OSTheme) => {
+    if (externalOnChangeTheme) {
+      externalOnChangeTheme(theme);
+    } else {
+      setInternalTheme(theme);
+    }
+  };
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>("all");
 
@@ -778,7 +793,7 @@ export default function Desktop({ onOpenRecruiter, onOpenResumeModal }: DesktopP
           </button>
           <button
             onClick={() => {
-              setCurrentTheme((t) => (t === "daylight" ? "midnight" : "daylight"));
+              setCurrentTheme(currentTheme === "daylight" ? "midnight" : "daylight");
               setContextMenu({ isOpen: false, x: 0, y: 0 });
             }}
             className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-blue-600 hover:text-white transition cursor-pointer text-left font-semibold"
